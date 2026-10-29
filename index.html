@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Controle de Atividades e Compras</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<section id="view-activities" class="view view--active">
+  <div class="topbar">
+    <h2>Atividades</h2>
+  </div>
+
+  <div class="tabs">
+    <button id="tab-activities-pending" class="tab tab--active" type="button">Pendentes</button>
+    <button id="tab-activities-history" class="tab" type="button">Realizadas</button>
+  </div>
+
+  <form id="form-new-activity" class="add-bar">
+    <input id="input-new-activity" type="text" placeholder="Nova atividade...">
+    <button type="submit">+</button>
+  </form>
+
+  <div id="list-activities-pending" class="list list--active"></div>
+  <div id="list-activities-history" class="list"></div>
+</section>
+
+<section id="view-purchases" class="view">
+  <div class="topbar">
+    <h2>Compras</h2>
+  </div>
+
+  <div class="tabs">
+    <button id="tab-purchases-pending" class="tab tab--active" type="button">Pendentes</button>
+    <button id="tab-purchases-history" class="tab" type="button">Histórico</button>
+  </div>
+
+  <form id="form-new-purchase" class="add-bar">
+    <input id="input-new-purchase-desc" type="text" placeholder="Novo item...">
+    <input id="input-new-purchase-value" type="text" placeholder="R$ 0,00" inputmode="none">
+    <select id="select-new-purchase-destino">
+      <option value="michael_pessoal">Michael Pessoal</option>
+      <option value="michael_casa">Michael Casa</option>
+      <option value="mae">Mãe</option>
+      <option value="gravata">Gravatá</option>
+      <option value="cachorros">Cachorros</option>
+      <option value="outros">Outros</option>
+    </select>
+    <button type="submit">+</button>
+  </form>
+
+  <div id="list-purchases-pending" class="list list--active"></div>
+  <div id="list-purchases-history" class="list"></div>
+</section>
+
+<section id="view-settings" class="view">
+  <div class="topbar">
+    <h2>Configurações</h2>
+  </div>
+
+  <div class="section-label">Aparência</div>
+  <div class="settings-row">
+    <div>
+      <div class="settings-label">Tema</div>
+      <div class="settings-sub">Escolha o visual do app</div>
+    </div>
+    <div class="seg">
+      <button id="setting-theme-light" type="button">Claro</button>
+      <button id="setting-theme-dark" type="button" class="seg--active">Escuro</button>
+    </div>
+  </div>
+
+  <div class="settings-row">
+    <div>
+      <div class="settings-label">Cor de destaque</div>
+      <div class="settings-sub">Usada em botões e abas</div>
+    </div>
+    <select id="setting-accent">
+      <option value="blue">Azul</option>
+    </select>
+  </div>
+
+  <div class="section-label">Compras</div>
+  <div class="settings-row">
+    <div>
+      <div class="settings-label">Agrupar por destino</div>
+      <div class="settings-sub">Na lista de pendentes</div>
+    </div>
+    <input id="setting-group-toggle" type="checkbox" checked>
+  </div>
+
+  <div class="section-label">Dados</div>
+  <div class="settings-row">
+    <div>
+      <div class="settings-label">Exportar backup</div>
+      <div class="settings-sub">Salva um arquivo no celular</div>
+    </div>
+    <button id="btn-export-backup" type="button">Exportar</button>
+  </div>
+  <div class="settings-row">
+    <div>
+      <div class="settings-label">Importar backup</div>
+      <div class="settings-sub">Restaura a partir de um arquivo</div>
+    </div>
+    <button id="btn-import-backup" type="button">Importar</button>
+    <input id="input-import-backup" type="file" accept="application/json" hidden>
+  </div>
+</section>
+
+<nav class="bottomnav">
+  <button id="nav-activities" class="navitem navitem--active" type="button">
+    <span class="navicon">&#9989;</span>Atividades
+  </button>
+  <button id="nav-purchases" class="navitem" type="button">
+    <span class="navicon">&#128722;</span>Compras
+  </button>
+  <button id="nav-settings" class="navitem" type="button">
+    <span class="navicon">&#9881;</span>Config.
+  </button>
+</nav>
+
+</body>
+</html>

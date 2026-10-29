@@ -1,0 +1,302 @@
+:root {
+  --bg: #0d1117;
+  --bg-elevated: #1c2128;
+  --bg-sunken: #161b22;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --accent-1: #2f81f7;
+  --accent-2: #58a6ff;
+}
+
+:root[data-theme='light'] {
+  --bg: #f6f8fa;
+  --bg-elevated: #ffffff;
+  --bg-sunken: #eaeef2;
+  --border: #d0d7de;
+  --text: #1f2328;
+  --text-dim: #636c76;
+  --accent-1: #2f81f7;
+  --accent-2: #0969da;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button {
+  font-family: inherit;
+  background: var(--bg-sunken);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding-bottom: 64px;
+}
+
+.view {
+  display: none;
+  padding: 16px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.view--active {
+  display: block;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.topbar h2 {
+  font-size: 22px;
+  margin: 0;
+  font-weight: 700;
+}
+
+.tabs {
+  display: flex;
+  margin-bottom: 14px;
+  background: var(--bg-sunken);
+  border-radius: 10px;
+  padding: 3px;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 9px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+.tab--active {
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  color: #fff;
+}
+
+.list {
+  display: none;
+}
+
+.list--active {
+  display: block;
+}
+
+.add-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.add-bar input,
+.add-bar select {
+  flex: 1;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+}
+
+.add-bar button {
+  width: 44px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 9px;
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.card-meta {
+  font-size: 12px;
+  color: var(--text-dim);
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.badge-pending {
+  background: rgba(240, 183, 30, 0.15);
+  color: #c9890a;
+}
+
+.badge-ok {
+  background: rgba(63, 185, 80, 0.15);
+  color: #2a9d44;
+}
+
+.badge-partial {
+  background: rgba(47, 129, 247, 0.15);
+  color: #2f81f7;
+}
+
+.badge-cancel {
+  background: rgba(248, 81, 73, 0.15);
+  color: #e5484d;
+}
+
+.badge-reschedule {
+  background: rgba(88, 166, 255, 0.18);
+  color: #58a6ff;
+}
+
+.obs {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-style: italic;
+  margin-top: 6px;
+}
+
+.group-header {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-2);
+  margin: 18px 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.group-header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.bottomnav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--border);
+  display: flex;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.navitem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.navitem--active {
+  color: var(--accent-2);
+}
+
+.navicon {
+  font-size: 19px;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px 14px;
+  margin-bottom: 10px;
+  gap: 10px;
+}
+
+.settings-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.settings-sub {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.seg {
+  display: flex;
+  background: var(--bg-sunken);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.seg button {
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-dim);
+  border: none;
+  background: none;
+}
+
+.seg button.seg--active {
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  color: #fff;
+}
+
+.section-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 16px 0 8px;
+}

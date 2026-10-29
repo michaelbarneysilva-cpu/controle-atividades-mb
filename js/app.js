@@ -370,6 +370,10 @@ export function init() {
   wireSettings();
   wireBackup();
   renderAll();
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
 }
 
 init();

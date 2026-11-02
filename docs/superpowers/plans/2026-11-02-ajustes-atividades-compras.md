@@ -119,7 +119,7 @@ query (`.includes(...)`).
 - [ ] **Step 4: Rodar e confirmar que passa**
 
 Run: `node --test tests/search.test.js`
-Expected: PASS, 4/4
+Expected: PASS, 3/3
 
 - [ ] **Step 5: Commit**
 

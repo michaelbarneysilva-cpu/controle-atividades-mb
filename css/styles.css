@@ -132,12 +132,57 @@ body {
   cursor: pointer;
 }
 
+.add-bar--wrap {
+  flex-wrap: wrap;
+}
+
+.add-bar--wrap input:first-child {
+  flex: 1 1 100%;
+}
+
+.search-input {
+  width: 100%;
+  margin-bottom: 14px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+}
+
 .card {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 12px 14px;
   margin-bottom: 9px;
+}
+
+.card--priority {
+  border-left: 3px solid #c9890a;
+}
+
+.card-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  justify-content: flex-end;
+}
+
+.card-actions button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  font-size: 15px;
+  background: var(--bg-sunken);
+}
+
+.card-actions button[data-action="priority"].is-active {
+  color: #c9890a;
+  border-color: #c9890a;
 }
 
 .card-title {

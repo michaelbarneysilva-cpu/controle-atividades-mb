@@ -16,6 +16,8 @@
     <h2>Atividades</h2>
   </div>
 
+  <input id="input-search-activities" type="text" class="search-input" placeholder="Buscar...">
+
   <div class="tabs">
     <button id="tab-activities-pending" class="tab tab--active" type="button">Pendentes</button>
     <button id="tab-activities-history" class="tab" type="button">Realizadas</button>
@@ -35,12 +37,14 @@
     <h2>Compras</h2>
   </div>
 
+  <input id="input-search-purchases" type="text" class="search-input" placeholder="Buscar...">
+
   <div class="tabs">
     <button id="tab-purchases-pending" class="tab tab--active" type="button">Pendentes</button>
     <button id="tab-purchases-history" class="tab" type="button">Histórico</button>
   </div>
 
-  <form id="form-new-purchase" class="add-bar">
+  <form id="form-new-purchase" class="add-bar add-bar--wrap">
     <input id="input-new-purchase-desc" type="text" placeholder="Novo item...">
     <input id="input-new-purchase-value" type="text" placeholder="R$ 0,00" inputmode="none">
     <select id="select-new-purchase-destino">

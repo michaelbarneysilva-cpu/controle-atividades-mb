@@ -18,7 +18,23 @@ export function createActivity(description) {
     completedAt: null,
     classification: null,
     note: '',
+    priority: false,
   };
+}
+
+export function toggleActivityPriority(activity) {
+  return { ...activity, priority: !activity.priority };
+}
+
+export function updateActivity(activity, { description, note }) {
+  if (description.trim() === '') {
+    return null;
+  }
+  return { ...activity, description, note };
+}
+
+export function sortActivities(activities) {
+  return [...activities].sort((a, b) => Number(Boolean(b.priority)) - Number(Boolean(a.priority)));
 }
 
 export function completeActivity(activity, classificationKey, note) {

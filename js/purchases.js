@@ -13,7 +13,11 @@ export const PURCHASE_STATUSES = {
   cancelled: 'Cancelado',
 };
 
-export function createPurchase(description, destino, valueCents = 0) {
+function sanitizeQuantity(quantity) {
+  return Number.isInteger(quantity) && quantity > 0 ? quantity : 1;
+}
+
+export function createPurchase(description, destino, valueCents = 0, quantity = 1) {
   if (description.trim() === '' || !(destino in PURCHASE_DESTINATIONS)) {
     return null;
   }
@@ -25,8 +29,40 @@ export function createPurchase(description, destino, valueCents = 0) {
     closedAt: null,
     destino,
     valueCents,
+    quantity: sanitizeQuantity(quantity),
+    priority: false,
     note: '',
   };
+}
+
+export function togglePurchasePriority(purchase) {
+  return { ...purchase, priority: !purchase.priority };
+}
+
+export function updatePurchase(purchase, { description, destino, valueCents, quantity, note }) {
+  if (description.trim() === '' || !(destino in PURCHASE_DESTINATIONS)) {
+    return null;
+  }
+  return {
+    ...purchase,
+    description,
+    destino,
+    valueCents,
+    quantity: sanitizeQuantity(quantity),
+    note,
+  };
+}
+
+export function splitByPriority(purchases) {
+  return {
+    priority: purchases.filter((purchase) => Boolean(purchase.priority)),
+    rest: purchases.filter((purchase) => !purchase.priority),
+  };
+}
+
+export function sortPurchases(purchases) {
+  const { priority, rest } = splitByPriority(purchases);
+  return [...priority, ...rest];
 }
 
 export function setPurchaseStatus(purchase, status, note) {

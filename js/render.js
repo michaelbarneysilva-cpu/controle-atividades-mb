@@ -1,5 +1,5 @@
-import { ACTIVITY_CLASSIFICATIONS } from './activities.js';
-import { PURCHASE_DESTINATIONS, PURCHASE_STATUSES, groupByDestino } from './purchases.js';
+import { ACTIVITY_CLASSIFICATIONS, sortActivities } from './activities.js';
+import { PURCHASE_DESTINATIONS, PURCHASE_STATUSES, groupByDestino, splitByPriority, sortPurchases } from './purchases.js';
 import { centsToBRL } from './money.js';
 
 const CLASSIFICATION_BADGE_CLASS = {
@@ -20,10 +20,37 @@ function formatDate(iso) {
   return new Date(iso).toLocaleDateString('pt-BR');
 }
 
+function renderCardActions(isPriority) {
+  const actions = document.createElement('div');
+  actions.className = 'card-actions';
+
+  const priorityBtn = document.createElement('button');
+  priorityBtn.type = 'button';
+  priorityBtn.dataset.action = 'priority';
+  priorityBtn.textContent = '★';
+  priorityBtn.classList.toggle('is-active', isPriority);
+  actions.appendChild(priorityBtn);
+
+  const editBtn = document.createElement('button');
+  editBtn.type = 'button';
+  editBtn.dataset.action = 'edit';
+  editBtn.textContent = '✎';
+  actions.appendChild(editBtn);
+
+  const deleteBtn = document.createElement('button');
+  deleteBtn.type = 'button';
+  deleteBtn.dataset.action = 'delete';
+  deleteBtn.textContent = '🗑';
+  actions.appendChild(deleteBtn);
+
+  return actions;
+}
+
 export function renderActivityCard(activity) {
   const card = document.createElement('div');
   card.className = 'card';
   card.dataset.id = activity.id;
+  card.classList.toggle('card--priority', Boolean(activity.priority));
 
   const title = document.createElement('div');
   title.className = 'card-title';
@@ -56,6 +83,8 @@ export function renderActivityCard(activity) {
     card.appendChild(obs);
   }
 
+  card.appendChild(renderCardActions(Boolean(activity.priority)));
+
   return card;
 }
 
@@ -63,6 +92,7 @@ export function renderPurchaseCard(purchase) {
   const card = document.createElement('div');
   card.className = 'card';
   card.dataset.id = purchase.id;
+  card.classList.toggle('card--priority', Boolean(purchase.priority));
 
   const title = document.createElement('div');
   title.className = 'card-title';
@@ -78,6 +108,7 @@ export function renderPurchaseCard(purchase) {
   meta.appendChild(badge);
   meta.appendChild(document.createTextNode(PURCHASE_DESTINATIONS[purchase.destino]));
   meta.appendChild(document.createTextNode(centsToBRL(purchase.valueCents)));
+  meta.appendChild(document.createTextNode(`Qtd: ${purchase.quantity ?? 1}`));
   card.appendChild(meta);
 
   if (purchase.note) {
@@ -86,6 +117,8 @@ export function renderPurchaseCard(purchase) {
     obs.textContent = `obs: ${purchase.note}`;
     card.appendChild(obs);
   }
+
+  card.appendChild(renderCardActions(Boolean(purchase.priority)));
 
   return card;
 }
@@ -103,7 +136,7 @@ export function renderActivitiesList(container, activities) {
     renderEmptyHint(container, 'Nada por aqui.');
     return;
   }
-  for (const activity of activities) {
+  for (const activity of sortActivities(activities)) {
     container.appendChild(renderActivityCard(activity));
   }
 }
@@ -116,13 +149,25 @@ export function renderPurchasesList(container, purchases, { grouped } = {}) {
   }
 
   if (!grouped) {
-    for (const purchase of purchases) {
+    for (const purchase of sortPurchases(purchases)) {
       container.appendChild(renderPurchaseCard(purchase));
     }
     return;
   }
 
-  for (const [destino, items] of groupByDestino(purchases)) {
+  const { priority, rest } = splitByPriority(purchases);
+
+  if (priority.length > 0) {
+    const priorityHeader = document.createElement('div');
+    priorityHeader.className = 'group-header';
+    priorityHeader.textContent = '⭐ Prioridade';
+    container.appendChild(priorityHeader);
+    for (const purchase of priority) {
+      container.appendChild(renderPurchaseCard(purchase));
+    }
+  }
+
+  for (const [destino, items] of groupByDestino(rest)) {
     const header = document.createElement('div');
     header.className = 'group-header';
     header.textContent = PURCHASE_DESTINATIONS[destino];

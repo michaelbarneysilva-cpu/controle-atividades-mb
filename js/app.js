@@ -248,6 +248,7 @@ function createModalHost() {
   value.style.display = 'none';
   select.style.display = 'none';
   quantity.style.display = 'none';
+  note.style.display = 'none';
 
   attachMoneyMask(value, (cents) => {
     modalValueCents = cents;
@@ -277,6 +278,7 @@ function openModal({
   initialSelect,
   showQuantity,
   initialQuantity,
+  showNote = true,
   initialNote,
   confirmLabel,
 }) {
@@ -312,6 +314,7 @@ function openModal({
   quantity.style.display = showQuantity ? '' : 'none';
   quantity.value = initialQuantity != null ? initialQuantity : 1;
 
+  note.style.display = showNote ? '' : 'none';
   note.value = initialNote || '';
   confirmBtn.textContent = confirmLabel;
   overlay.classList.remove('hidden');
@@ -365,6 +368,7 @@ async function handleActivityEdit(activity) {
 async function handleActivityDelete(activity) {
   const result = await openModal({
     title: 'Excluir este item?',
+    showNote: false,
     confirmLabel: 'Excluir',
   });
   if (!result.confirmed) {
@@ -412,6 +416,7 @@ async function handlePurchaseEdit(purchase) {
 async function handlePurchaseDelete(purchase) {
   const result = await openModal({
     title: 'Excluir este item?',
+    showNote: false,
     confirmLabel: 'Excluir',
   });
   if (!result.confirmed) {

@@ -377,7 +377,8 @@ body {
 }
 
 .modal-box select,
-.modal-box input[type='text'] {
+.modal-box input[type='text'],
+.modal-box input[type='number'] {
   width: 100%;
   background: var(--bg-sunken);
   border: 1px solid var(--border);

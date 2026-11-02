@@ -1,15 +1,25 @@
 import { loadJSON, saveJSON, exportBackup, importBackup, ACTIVITIES_KEY, PURCHASES_KEY } from './storage.js';
-import { attachMoneyMask } from './money.js';
-import { createActivity, completeActivity, reopenActivity, ACTIVITY_CLASSIFICATIONS } from './activities.js';
+import { attachMoneyMask, centsToBRL } from './money.js';
+import {
+  createActivity,
+  completeActivity,
+  reopenActivity,
+  toggleActivityPriority,
+  updateActivity,
+  ACTIVITY_CLASSIFICATIONS,
+} from './activities.js';
 import {
   createPurchase,
   setPurchaseStatus,
   reopenPurchase,
+  togglePurchasePriority,
+  updatePurchase,
   PURCHASE_DESTINATIONS,
   PURCHASE_STATUSES,
 } from './purchases.js';
 import { loadSettings, saveSettings } from './settings.js';
 import { renderActivitiesList, renderPurchasesList } from './render.js';
+import { filterByQuery } from './search.js';
 
 const engine = window.localStorage;
 
@@ -17,6 +27,8 @@ let activities = [];
 let purchases = [];
 let settings = {};
 let newPurchaseValueCents = 0;
+let activitySearchQuery = '';
+let purchaseSearchQuery = '';
 
 const PURCHASE_CLOSE_STATUSES = Object.fromEntries(
   Object.entries(PURCHASE_STATUSES).filter(([key]) => key !== 'pending')
@@ -37,13 +49,13 @@ function persistPurchases() {
 }
 
 function renderAll() {
-  const pendingActivities = activities.filter((a) => a.status === 'pending');
-  const doneActivities = activities.filter((a) => a.status === 'done');
+  const pendingActivities = filterByQuery(activities.filter((a) => a.status === 'pending'), activitySearchQuery);
+  const doneActivities = filterByQuery(activities.filter((a) => a.status === 'done'), activitySearchQuery);
   renderActivitiesList(document.getElementById('list-activities-pending'), pendingActivities);
   renderActivitiesList(document.getElementById('list-activities-history'), doneActivities);
 
-  const pendingPurchases = purchases.filter((p) => p.status === 'pending');
-  const historyPurchases = purchases.filter((p) => p.status !== 'pending');
+  const pendingPurchases = filterByQuery(purchases.filter((p) => p.status === 'pending'), purchaseSearchQuery);
+  const historyPurchases = filterByQuery(purchases.filter((p) => p.status !== 'pending'), purchaseSearchQuery);
   renderPurchasesList(document.getElementById('list-purchases-pending'), pendingPurchases, {
     grouped: settings.groupPurchasesByDestino,
   });
@@ -138,6 +150,17 @@ function wireForms() {
   });
 }
 
+function wireSearch() {
+  document.getElementById('input-search-activities').addEventListener('input', (event) => {
+    activitySearchQuery = event.target.value;
+    renderAll();
+  });
+  document.getElementById('input-search-purchases').addEventListener('input', (event) => {
+    purchaseSearchQuery = event.target.value;
+    renderAll();
+  });
+}
+
 function wireSettings() {
   document.getElementById('setting-theme-light').addEventListener('click', () => {
     settings = saveSettings(engine, { theme: 'light' });
@@ -194,6 +217,7 @@ function wireBackup() {
 }
 
 let modalEls = null;
+let modalValueCents = 0;
 
 function createModalHost() {
   const overlay = document.createElement('div');
@@ -202,7 +226,10 @@ function createModalHost() {
   overlay.innerHTML = `
     <div class="modal-box">
       <h3 id="modal-title"></h3>
+      <input id="modal-description" type="text" placeholder="Descrição">
+      <input id="modal-value" type="text">
       <select id="modal-select"></select>
+      <input id="modal-quantity" type="number" min="1">
       <input id="modal-note" type="text" placeholder="Observação (opcional)">
       <div class="modal-actions">
         <button id="modal-cancel" type="button">Cancelar</button>
@@ -210,23 +237,64 @@ function createModalHost() {
       </div>
     </div>`;
   document.body.appendChild(overlay);
+
+  const description = overlay.querySelector('#modal-description');
+  const value = overlay.querySelector('#modal-value');
+  const select = overlay.querySelector('#modal-select');
+  const quantity = overlay.querySelector('#modal-quantity');
+  const note = overlay.querySelector('#modal-note');
+
+  description.style.display = 'none';
+  value.style.display = 'none';
+  select.style.display = 'none';
+  quantity.style.display = 'none';
+
+  attachMoneyMask(value, (cents) => {
+    modalValueCents = cents;
+  });
+
   return {
     overlay,
     title: overlay.querySelector('#modal-title'),
-    select: overlay.querySelector('#modal-select'),
-    note: overlay.querySelector('#modal-note'),
+    description,
+    value,
+    select,
+    quantity,
+    note,
     cancelBtn: overlay.querySelector('#modal-cancel'),
     confirmBtn: overlay.querySelector('#modal-confirm'),
   };
 }
 
-function openModal({ title, showSelect, selectOptions, initialNote, confirmLabel }) {
+function openModal({
+  title,
+  showDescription,
+  initialDescription,
+  showValue,
+  initialValueCents,
+  showSelect,
+  selectOptions,
+  initialSelect,
+  showQuantity,
+  initialQuantity,
+  initialNote,
+  confirmLabel,
+}) {
   if (!modalEls) {
     modalEls = createModalHost();
   }
-  const { overlay, title: titleEl, select, note, cancelBtn, confirmBtn } = modalEls;
+  const { overlay, title: titleEl, description, value, select, quantity, note, cancelBtn, confirmBtn } = modalEls;
 
   titleEl.textContent = title;
+
+  description.style.display = showDescription ? '' : 'none';
+  description.value = initialDescription || '';
+
+  value.style.display = showValue ? '' : 'none';
+  value.dataset.rawDigits = String(initialValueCents || 0);
+  value.value = centsToBRL(initialValueCents || 0);
+  modalValueCents = initialValueCents || 0;
+
   select.style.display = showSelect ? '' : 'none';
   select.innerHTML = '';
   if (showSelect) {
@@ -236,7 +304,14 @@ function openModal({ title, showSelect, selectOptions, initialNote, confirmLabel
       option.textContent = label;
       select.appendChild(option);
     }
+    if (initialSelect) {
+      select.value = initialSelect;
+    }
   }
+
+  quantity.style.display = showQuantity ? '' : 'none';
+  quantity.value = initialQuantity != null ? initialQuantity : 1;
+
   note.value = initialNote || '';
   confirmBtn.textContent = confirmLabel;
   overlay.classList.remove('hidden');
@@ -249,7 +324,14 @@ function openModal({ title, showSelect, selectOptions, initialNote, confirmLabel
       resolve(result);
     }
     function onConfirm() {
-      cleanup({ confirmed: true, value: showSelect ? select.value : null, note: note.value });
+      cleanup({
+        confirmed: true,
+        description: description.value,
+        valueCents: modalValueCents,
+        value: showSelect ? select.value : null,
+        quantity: Number(quantity.value) || 1,
+        note: note.value,
+      });
     }
     function onCancel() {
       cleanup({ confirmed: false });
@@ -257,6 +339,87 @@ function openModal({ title, showSelect, selectOptions, initialNote, confirmLabel
     confirmBtn.addEventListener('click', onConfirm);
     cancelBtn.addEventListener('click', onCancel);
   });
+}
+
+async function handleActivityEdit(activity) {
+  const result = await openModal({
+    title: 'Editar atividade',
+    showDescription: true,
+    initialDescription: activity.description,
+    initialNote: activity.note,
+    confirmLabel: 'Salvar',
+  });
+  if (!result.confirmed) {
+    return;
+  }
+  const updated = updateActivity(activity, { description: result.description, note: result.note });
+  if (!updated) {
+    return;
+  }
+  const index = activities.findIndex((a) => a.id === activity.id);
+  activities[index] = updated;
+  persistActivities();
+  renderAll();
+}
+
+async function handleActivityDelete(activity) {
+  const result = await openModal({
+    title: 'Excluir este item?',
+    confirmLabel: 'Excluir',
+  });
+  if (!result.confirmed) {
+    return;
+  }
+  activities = activities.filter((a) => a.id !== activity.id);
+  persistActivities();
+  renderAll();
+}
+
+async function handlePurchaseEdit(purchase) {
+  const result = await openModal({
+    title: 'Editar compra',
+    showDescription: true,
+    initialDescription: purchase.description,
+    showValue: true,
+    initialValueCents: purchase.valueCents,
+    showSelect: true,
+    selectOptions: PURCHASE_DESTINATIONS,
+    initialSelect: purchase.destino,
+    showQuantity: true,
+    initialQuantity: purchase.quantity ?? 1,
+    initialNote: purchase.note,
+    confirmLabel: 'Salvar',
+  });
+  if (!result.confirmed) {
+    return;
+  }
+  const updated = updatePurchase(purchase, {
+    description: result.description,
+    destino: result.value,
+    valueCents: result.valueCents,
+    quantity: result.quantity,
+    note: result.note,
+  });
+  if (!updated) {
+    return;
+  }
+  const index = purchases.findIndex((p) => p.id === purchase.id);
+  purchases[index] = updated;
+  persistPurchases();
+  renderAll();
+}
+
+async function handlePurchaseDelete(purchase) {
+  const result = await openModal({
+    title: 'Excluir este item?',
+    confirmLabel: 'Excluir',
+  });
+  if (!result.confirmed) {
+    return;
+  }
+  purchases = purchases.filter((p) => p.id !== purchase.id);
+  persistPurchases();
+  renderAll();
 }
 
 function wireCardInteractions() {
@@ -269,6 +432,27 @@ function wireCardInteractions() {
     if (!activity) {
       return;
     }
+
+    const actionBtn = event.target.closest('button[data-action]');
+    if (actionBtn) {
+      if (actionBtn.dataset.action === 'priority') {
+        const index = activities.findIndex((a) => a.id === activity.id);
+        activities[index] = toggleActivityPriority(activity);
+        persistActivities();
+        renderAll();
+        return;
+      }
+      if (actionBtn.dataset.action === 'edit') {
+        await handleActivityEdit(activity);
+        return;
+      }
+      if (actionBtn.dataset.action === 'delete') {
+        await handleActivityDelete(activity);
+        return;
+      }
+      return;
+    }
+
     const result = await openModal({
       title: 'Concluir atividade',
       showSelect: true,
@@ -294,6 +478,27 @@ function wireCardInteractions() {
     if (!activity) {
       return;
     }
+
+    const actionBtn = event.target.closest('button[data-action]');
+    if (actionBtn) {
+      if (actionBtn.dataset.action === 'priority') {
+        const index = activities.findIndex((a) => a.id === activity.id);
+        activities[index] = toggleActivityPriority(activity);
+        persistActivities();
+        renderAll();
+        return;
+      }
+      if (actionBtn.dataset.action === 'edit') {
+        await handleActivityEdit(activity);
+        return;
+      }
+      if (actionBtn.dataset.action === 'delete') {
+        await handleActivityDelete(activity);
+        return;
+      }
+      return;
+    }
+
     const result = await openModal({
       title: 'Reabrir esta atividade?',
       showSelect: false,
@@ -318,6 +523,27 @@ function wireCardInteractions() {
     if (!purchase) {
       return;
     }
+
+    const actionBtn = event.target.closest('button[data-action]');
+    if (actionBtn) {
+      if (actionBtn.dataset.action === 'priority') {
+        const index = purchases.findIndex((p) => p.id === purchase.id);
+        purchases[index] = togglePurchasePriority(purchase);
+        persistPurchases();
+        renderAll();
+        return;
+      }
+      if (actionBtn.dataset.action === 'edit') {
+        await handlePurchaseEdit(purchase);
+        return;
+      }
+      if (actionBtn.dataset.action === 'delete') {
+        await handlePurchaseDelete(purchase);
+        return;
+      }
+      return;
+    }
+
     const result = await openModal({
       title: 'Mudar status da compra',
       showSelect: true,
@@ -343,6 +569,27 @@ function wireCardInteractions() {
     if (!purchase) {
       return;
     }
+
+    const actionBtn = event.target.closest('button[data-action]');
+    if (actionBtn) {
+      if (actionBtn.dataset.action === 'priority') {
+        const index = purchases.findIndex((p) => p.id === purchase.id);
+        purchases[index] = togglePurchasePriority(purchase);
+        persistPurchases();
+        renderAll();
+        return;
+      }
+      if (actionBtn.dataset.action === 'edit') {
+        await handlePurchaseEdit(purchase);
+        return;
+      }
+      if (actionBtn.dataset.action === 'delete') {
+        await handlePurchaseDelete(purchase);
+        return;
+      }
+      return;
+    }
+
     const result = await openModal({
       title: 'Reabrir esta compra?',
       showSelect: false,
@@ -367,6 +614,7 @@ export function init() {
   wireTabs('tab-purchases-pending', 'tab-purchases-history', 'list-purchases-pending', 'list-purchases-history');
   wireForms();
   wireCardInteractions();
+  wireSearch();
   wireSettings();
   wireBackup();
   renderAll();

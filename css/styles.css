@@ -112,6 +112,7 @@ body {
 .add-bar input,
 .add-bar select {
   flex: 1;
+  min-width: 0;
   background: var(--bg-sunken);
   border: 1px solid var(--border);
   border-radius: 10px;

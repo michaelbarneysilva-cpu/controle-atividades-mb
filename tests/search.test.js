@@ -13,6 +13,12 @@ test('matchesQuery compara description e note, ignorando acento e caixa', () => 
   assert.equal(matchesQuery({ description: 'Tênis', note: '' }, 'coleira'), false);
 });
 
+test('matchesQuery ignora espaço extra no início/fim da query', () => {
+  assert.equal(matchesQuery({ description: 'Ração premium', note: '' }, 'racao '), true);
+  assert.equal(matchesQuery({ description: 'Ração premium', note: '' }, '  ração'), true);
+  assert.equal(matchesQuery({ description: 'Ração premium', note: '' }, '   '), true);
+});
+
 test('filterByQuery mantém só os itens que batem, preservando a ordem', () => {
   const items = [
     { description: 'Ração', note: '' },

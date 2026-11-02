@@ -3,11 +3,12 @@ function normalize(text) {
 }
 
 export function matchesQuery(item, query) {
-  if (!query) {
+  const trimmed = (query || '').trim();
+  if (!trimmed) {
     return true;
   }
   const haystack = normalize(`${item.description} ${item.note || ''}`);
-  return haystack.includes(normalize(query));
+  return haystack.includes(normalize(trimmed));
 }
 
 export function filterByQuery(items, query) {

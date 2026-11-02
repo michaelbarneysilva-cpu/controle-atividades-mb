@@ -227,9 +227,11 @@ function createModalHost() {
     <div class="modal-box">
       <h3 id="modal-title"></h3>
       <input id="modal-description" type="text" placeholder="Descrição">
+      <label id="modal-value-label" class="modal-field-label" for="modal-value">Valor (R$)</label>
       <input id="modal-value" type="text">
       <select id="modal-select"></select>
-      <input id="modal-quantity" type="number" min="1">
+      <label id="modal-quantity-label" class="modal-field-label" for="modal-quantity">Quantidade</label>
+      <input id="modal-quantity" type="number" min="1" step="1">
       <input id="modal-note" type="text" placeholder="Observação (opcional)">
       <div class="modal-actions">
         <button id="modal-cancel" type="button">Cancelar</button>
@@ -240,14 +242,18 @@ function createModalHost() {
 
   const description = overlay.querySelector('#modal-description');
   const value = overlay.querySelector('#modal-value');
+  const valueLabel = overlay.querySelector('#modal-value-label');
   const select = overlay.querySelector('#modal-select');
   const quantity = overlay.querySelector('#modal-quantity');
+  const quantityLabel = overlay.querySelector('#modal-quantity-label');
   const note = overlay.querySelector('#modal-note');
 
   description.style.display = 'none';
   value.style.display = 'none';
+  valueLabel.style.display = 'none';
   select.style.display = 'none';
   quantity.style.display = 'none';
+  quantityLabel.style.display = 'none';
   note.style.display = 'none';
 
   attachMoneyMask(value, (cents) => {
@@ -259,8 +265,10 @@ function createModalHost() {
     title: overlay.querySelector('#modal-title'),
     description,
     value,
+    valueLabel,
     select,
     quantity,
+    quantityLabel,
     note,
     cancelBtn: overlay.querySelector('#modal-cancel'),
     confirmBtn: overlay.querySelector('#modal-confirm'),
@@ -285,7 +293,19 @@ function openModal({
   if (!modalEls) {
     modalEls = createModalHost();
   }
-  const { overlay, title: titleEl, description, value, select, quantity, note, cancelBtn, confirmBtn } = modalEls;
+  const {
+    overlay,
+    title: titleEl,
+    description,
+    value,
+    valueLabel,
+    select,
+    quantity,
+    quantityLabel,
+    note,
+    cancelBtn,
+    confirmBtn,
+  } = modalEls;
 
   titleEl.textContent = title;
 
@@ -293,6 +313,7 @@ function openModal({
   description.value = initialDescription || '';
 
   value.style.display = showValue ? '' : 'none';
+  valueLabel.style.display = showValue ? '' : 'none';
   value.dataset.rawDigits = String(initialValueCents || 0);
   value.value = centsToBRL(initialValueCents || 0);
   modalValueCents = initialValueCents || 0;
@@ -312,6 +333,7 @@ function openModal({
   }
 
   quantity.style.display = showQuantity ? '' : 'none';
+  quantityLabel.style.display = showQuantity ? '' : 'none';
   quantity.value = initialQuantity != null ? initialQuantity : 1;
 
   note.style.display = showNote ? '' : 'none';
@@ -367,7 +389,7 @@ async function handleActivityEdit(activity) {
 
 async function handleActivityDelete(activity) {
   const result = await openModal({
-    title: 'Excluir este item?',
+    title: `Excluir "${activity.description}"?`,
     showNote: false,
     confirmLabel: 'Excluir',
   });
@@ -415,7 +437,7 @@ async function handlePurchaseEdit(purchase) {
 
 async function handlePurchaseDelete(purchase) {
   const result = await openModal({
-    title: 'Excluir este item?',
+    title: `Excluir "${purchase.description}"?`,
     showNote: false,
     confirmLabel: 'Excluir',
   });
@@ -455,6 +477,9 @@ function wireCardInteractions() {
         await handleActivityDelete(activity);
         return;
       }
+      return;
+    }
+    if (event.target.closest('.card-actions')) {
       return;
     }
 
@@ -503,6 +528,9 @@ function wireCardInteractions() {
       }
       return;
     }
+    if (event.target.closest('.card-actions')) {
+      return;
+    }
 
     const result = await openModal({
       title: 'Reabrir esta atividade?',
@@ -546,6 +574,9 @@ function wireCardInteractions() {
         await handlePurchaseDelete(purchase);
         return;
       }
+      return;
+    }
+    if (event.target.closest('.card-actions')) {
       return;
     }
 
@@ -592,6 +623,9 @@ function wireCardInteractions() {
         await handlePurchaseDelete(purchase);
         return;
       }
+      return;
+    }
+    if (event.target.closest('.card-actions')) {
       return;
     }
 

@@ -28,6 +28,7 @@ function renderCardActions(isPriority) {
   priorityBtn.type = 'button';
   priorityBtn.dataset.action = 'priority';
   priorityBtn.textContent = '★';
+  priorityBtn.setAttribute('aria-label', isPriority ? 'Remover prioridade' : 'Marcar como prioridade');
   priorityBtn.classList.toggle('is-active', isPriority);
   actions.appendChild(priorityBtn);
 
@@ -35,12 +36,14 @@ function renderCardActions(isPriority) {
   editBtn.type = 'button';
   editBtn.dataset.action = 'edit';
   editBtn.textContent = '✎';
+  editBtn.setAttribute('aria-label', 'Editar');
   actions.appendChild(editBtn);
 
   const deleteBtn = document.createElement('button');
   deleteBtn.type = 'button';
   deleteBtn.dataset.action = 'delete';
   deleteBtn.textContent = '🗑';
+  deleteBtn.setAttribute('aria-label', 'Excluir');
   actions.appendChild(deleteBtn);
 
   return actions;

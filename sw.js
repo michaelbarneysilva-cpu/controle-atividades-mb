@@ -12,6 +12,7 @@ const APP_SHELL_FILES = [
   'js/activities.js',
   'js/purchases.js',
   'js/settings.js',
+  'js/search.js',
   'icons/icon-192.png',
   'icons/icon-512.png',
 ];
